@@ -1,6 +1,7 @@
 ## CloudFormation Script to spin up fault-tolerant Web-Servers
 
 The following AWS Cloudformation template does the following:  
+  
 • Spins up a load balancer with an autoscaling group of 1 t2.nano instance. The instance serves a “hello” world page. Its in an autoscaling group so that if the instance is terminated, the autoscaling group will replace the instance.  
 • A second version of the App that uses a publicly available API like https://date.nager.at/ or https://api.abalin.net/, determine if today is a holiday. Included in the hello world page is a greeting appropriate to the date, if it is indeed a holiday in any country.  
 • It can roll back from the second “holiday-aware” version to the simple original “hello world” version if, for example, the public API being used were to become unavailable.  
