@@ -1,0 +1,317 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Resources": {
+		"dnsbhavikpandyacomPrimary": {
+			"Type": "AWS::Route53::RecordSetGroup",
+			"Properties": {
+				"HostedZoneId": "Z00254272ARH6P93I0YXT",
+				"RecordSets": [{
+					"Failover": "PRIMARY",
+					"Name": "bhavikpandya.com.",
+					"SetIdentifier": "Primary",
+					"Type": "A",
+					"HealthCheckId": {
+						"Ref": "healthChkAlice"
+					},
+					"AliasTarget": {
+                        "HostedZoneId": { "Fn::GetAtt" : ["elbLBV2", "CanonicalHostedZoneID"] },
+						"DNSName": { "Fn::GetAtt" : ["elbLBV2", "DNSName"] }
+					}
+				}]
+			}
+		},
+		"dnsbhavikpandyacomSecondary": {
+			"Type": "AWS::Route53::RecordSetGroup",
+			"Properties": {
+				"HostedZoneId": "Z00254272ARH6P93I0YXT",
+				"RecordSets": [{
+					"Failover": "SECONDARY",
+					"Name": "bhavikpandya.com.",
+					"SetIdentifier": "Secondary",
+					"Type": "A",
+					"AliasTarget": {
+                        "HostedZoneId": { "Fn::GetAtt" : ["elbLBV1", "CanonicalHostedZoneID"] },
+						"DNSName": { "Fn::GetAtt" : ["elbLBV1", "DNSName"] }
+					}
+				}]
+			}
+		},
+		"healthChkAlice": {
+			"Type": "AWS::Route53::HealthCheck",
+			"Properties": {
+				"HealthCheckConfig": {
+					"FailureThreshold": "3",
+					"FullyQualifiedDomainName": "date.nager.at",
+					"Port": "443",
+					"RequestInterval": "30",
+					"ResourcePath": "/Api/v2/NextPublicHolidaysWorldwide",
+					"Type": "HTTPS"
+				}
+			}
+		},
+		"asgASHelloV1": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Properties": {
+				"AvailabilityZones": [
+					"us-east-2a",
+					"us-east-2b",
+					"us-east-2c"
+				],
+				"Cooldown": "300",
+				"DesiredCapacity": "1",
+				"HealthCheckGracePeriod": "300",
+				"HealthCheckType": "EC2",
+				"MaxSize": "1",
+				"MinSize": "1",
+				"VPCZoneIdentifier": [
+					"subnet-bd3d8dc6",
+					"subnet-d2f0339f",
+					"subnet-f4ddb69d"
+				],
+				"LaunchConfigurationName": {
+					"Ref": "lcHelloWorldV1"
+				},
+				"TerminationPolicies": [
+					"Default"
+				],
+				"TargetGroupARNs": [{
+					"Ref": "TargetGroupV1"
+				}]
+			}
+		},
+		"asgASHelloV2": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Properties": {
+				"AvailabilityZones": [
+					"us-east-2a",
+					"us-east-2b",
+					"us-east-2c"
+				],
+				"Cooldown": "300",
+				"DesiredCapacity": "1",
+				"HealthCheckGracePeriod": "300",
+				"HealthCheckType": "EC2",
+				"MaxSize": "1",
+				"MinSize": "1",
+				"VPCZoneIdentifier": [
+					"subnet-bd3d8dc6",
+					"subnet-d2f0339f",
+					"subnet-f4ddb69d"
+				],
+				"LaunchConfigurationName": {
+					"Ref": "lcHelloWorldV2"
+				},
+				"TerminationPolicies": [
+					"Default"
+				],
+				"TargetGroupARNs": [{
+					"Ref": "TargetGroupV2"
+				}]
+			}
+		},
+		"lcHelloWorldV1": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"Properties": {
+				"ImageId": "ami-0e01ce4ee18447327",
+				"InstanceType": "t2.nano",
+				"KeyName": "Key",
+				"SecurityGroups": [{
+					"Ref": "sglaunchwizard1"
+				}],
+				"BlockDeviceMappings": [{
+					"DeviceName": "/dev/xvda",
+					"Ebs": {
+						"SnapshotId": "snap-0f54692056aaa4c20",
+						"VolumeSize": 8
+					}
+				}],
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["", [
+							"#!/bin/bash\n",
+							"sudo yum -y install httpd\n",
+							"cd /\n",
+							"sudo chmod -R a+rwx var\n",
+							"cd var\n",
+							"cd www\n",
+							"cd html\n",
+							"sudo yum install git -y\n",
+							"git clone https://github.com/pandyabhavik2494/helloVersion1.git\n",
+							"cd helloVersion1\n",
+							"cp -R * /var/www/html\n",
+							"cd ..\n",
+							"sudo service httpd start\n",
+							"sudo rm -r helloVersion1"
+						]]
+					}
+				}
+			}
+		},
+		"lcHelloWorldV2": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"Properties": {
+				"ImageId": "ami-0e01ce4ee18447327",
+				"InstanceType": "t2.nano",
+				"KeyName": "Key",
+				"SecurityGroups": [{
+					"Ref": "sglaunchwizard1"
+				}],
+				"BlockDeviceMappings": [{
+					"DeviceName": "/dev/xvda",
+					"Ebs": {
+						"SnapshotId": "snap-0f54692056aaa4c20",
+						"VolumeSize": 8
+					}
+				}],
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": ["", [
+							"#!/bin/bash\n",
+							"sudo yum -y install httpd\n",
+							"cd /\n",
+							"sudo chmod -R a+rwx var\n",
+							"cd var\n",
+							"cd www\n",
+							"cd html\n",
+							"sudo yum install git -y\n",
+							"git clone https://github.com/pandyabhavik2494/helloVersion2.git\n",
+							"cd helloVersion2\n",
+							"cp -R * /var/www/html\n",
+							"cd ..\n",
+							"sudo service httpd start\n",
+							"sudo rm -r helloVersion2"
+						]]
+					}
+				}
+			}
+		},
+		"sglaunchwizard1": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "launch-wizard-1 created 2020-04-05T12:37:36.242-04:00",
+				"VpcId": "vpc-697e1a00"
+			}
+		},
+		"ingress1": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "sglaunchwizard1"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "80",
+				"ToPort": "80",
+				"CidrIp": "0.0.0.0/0"
+			}
+		},
+		"ingress2": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "sglaunchwizard1"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "22",
+				"ToPort": "22",
+				"CidrIp": "0.0.0.0/0"
+			}
+		},
+		"ingress3": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "sglaunchwizard1"
+				},
+				"IpProtocol": "tcp",
+				"FromPort": "443",
+				"ToPort": "443",
+				"CidrIp": "0.0.0.0/0"
+			}
+		},
+		"egress1": {
+			"Type": "AWS::EC2::SecurityGroupEgress",
+			"Properties": {
+				"GroupId": {
+					"Ref": "sglaunchwizard1"
+				},
+				"IpProtocol": "-1",
+				"CidrIp": "0.0.0.0/0"
+			}
+		},
+		"elbLBV1": {
+			"Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+			"Properties": {
+				"IpAddressType": "ipv4",
+				"Name": "eLBV1",
+				"Scheme": "internet-facing",
+				"SecurityGroups": [{
+					"Ref": "sglaunchwizard1"
+				}],
+				"Subnets": ["subnet-bd3d8dc6", "subnet-d2f0339f"],
+				"Type": "application"
+			}
+		},
+		"elbLBV2": {
+			"Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+			"Properties": {
+				"IpAddressType": "ipv4",
+				"Name": "eLBV2",
+				"Scheme": "internet-facing",
+				"SecurityGroups": [{
+					"Ref": "sglaunchwizard1"
+				}],
+				"Subnets": ["subnet-bd3d8dc6", "subnet-d2f0339f"],
+				"Type": "application"
+			}
+		},
+		"TargetGroupV1": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"Properties": {
+				"Port": 80,
+				"Protocol": "HTTP",
+				"VpcId": "vpc-697e1a00"
+			}
+		},
+		"TargetGroupV2": {
+			"Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+			"Properties": {
+				"Port": 80,
+				"Protocol": "HTTP",
+				"VpcId": "vpc-697e1a00"
+			}
+		},
+		"ListenerV1": {
+			"Type": "AWS::ElasticLoadBalancingV2::Listener",
+			"Properties": {
+				"DefaultActions": [{
+					"Type": "forward",
+					"TargetGroupArn": {
+						"Ref": "TargetGroupV1"
+					}
+				}],
+				"LoadBalancerArn": {
+					"Ref": "elbLBV1"
+				},
+				"Port": "80",
+				"Protocol": "HTTP"
+			}
+		},
+		"ListenerV2": {
+			"Type": "AWS::ElasticLoadBalancingV2::Listener",
+			"Properties": {
+				"DefaultActions": [{
+					"Type": "forward",
+					"TargetGroupArn": {
+						"Ref": "TargetGroupV2"
+					}
+				}],
+				"LoadBalancerArn": {
+					"Ref": "elbLBV2"
+				},
+				"Port": "80",
+				"Protocol": "HTTP"
+			}
+		}
+	},
+	"Description": ""
+}
