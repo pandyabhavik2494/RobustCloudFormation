@@ -6,7 +6,8 @@ The following AWS Cloudformation template does the following:
 • A second version of the App that uses a publicly available API like https://date.nager.at/ or https://api.abalin.net/, determine if today is a holiday. Included in the hello world page is a greeting appropriate to the date, if it is indeed a holiday in any country.  
 • It can roll back from the second “holiday-aware” version to the simple original “hello world” version if, for example, the public API being used were to become unavailable.  
 
-
+  
+  
 
 **Details :**
 
@@ -17,6 +18,8 @@ The following AWS Cloudformation template does the following:
 • Here if the Health-Check passes we would redirect user http requests to the load balancer attached to the Ec2 instances which host Version 2 of the Application.  
 • If the Health-Check fails we would redirect user http requests to the load balancer attached to the Ec2 instances which host Version 1 of the Application.  
 
+  
+   
 **Note :**
 
 • One will need to turn off CORS check on their browser in order to see the version 2 off the app in action since the 3rd party domain gives a CORS error in the browser. There’s nothing much that I could do on my end to remediate that in production since it’s a third party API.  
